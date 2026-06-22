@@ -633,6 +633,7 @@
 
   function startBlowPhase() {
     blownOut = false;
+    $("candle-hint").hidden = false;   // "촛불을 꺼보자" (켜진 동안만)
     setupFan();
     setupCandleHold();
   }
@@ -768,6 +769,7 @@
 
     $("flame").classList.add("out");
     $("smoke").classList.add("rise");
+    $("candle-hint").hidden = true;    // 안내문구 제거
     vibrate([20, 40, 60]);
     // 낮은 "후—" 음
     playNote(0, { freq: 180, type: "sine", vol: 0.14, dur: 0.5 });
@@ -786,9 +788,12 @@
   function revealFinale() {
     var finale = $("finale");
     finale.hidden = false;
+    $("replay-btn").hidden = true;   // 기프티콘 나온 뒤에 등장
     fillGifticon();
     // 짧은 딜레이 뒤 기프티콘 카드 팝인
     setTimeout(function () { $("gifticon").classList.add("show"); }, REDUCED ? 0 : 500);
+    // 기프티콘 카드 다음에 "한 번 더" 버튼 등장
+    setTimeout(function () { $("replay-btn").hidden = false; }, REDUCED ? 0 : 1150);
     // 축하 멜로디
     if (!REDUCED) {
       [0, 2, 4, 7].forEach(function (n, i) {

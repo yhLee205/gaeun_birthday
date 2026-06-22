@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#FFF1F4" />
-  <title>생일 축하해 🎂</title>
+  <title>가은아 생일 축하해 🎂</title>
 
   <!-- Google Fonts (한글): 제목 Black Han Sans / UI Jua / 본문 Gowun Dodum / 손편지 Nanum Pen Script -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -116,6 +116,9 @@
       </div>
     </div>
 
+    <!-- 케이크 밑 안내 (촛불 켜진 동안만) -->
+    <p id="candle-hint" class="candle-hint" hidden>촛불을 꺼보자</p>
+
     <!-- 피날레: 기프티콘 보상 -->
     <div id="finale" class="finale" hidden>
       <h2 class="finale-title">생일 축하해 <span class="emoji" aria-hidden="true">🎉🎂</span></h2>
@@ -142,7 +145,7 @@
         <p class="gifticon-note" id="gifticon-note" hidden></p>
       </div>
 
-      <button id="replay-btn" class="btn btn-primary" type="button">한 번 더</button>
+      <button id="replay-btn" class="btn btn-primary" type="button" hidden>한 번 더</button>
     </div>
   </section>
 
