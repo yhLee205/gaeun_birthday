@@ -14,7 +14,7 @@
   --ink: #243042;       /* 진한 슬레이트 (텍스트) */
   --white-soft: #FFFFFF;
 
-  --font-title: "Black Han Sans", sans-serif;
+  --font-title: "Noto Sans KR", sans-serif;  /* 제목용 — 한글 깔끔하게 렌더 */
   --font-ui: "Jua", sans-serif;
   --font-body: "Gowun Dodum", sans-serif;
   --font-hand: "Nanum Pen Script", cursive;
@@ -116,15 +116,15 @@ body { position: relative; width: 100%; height: 100dvh; }
   transform: rotate(-2deg);
 }
 .title-name {
-  font-family: var(--font-title);
-  font-size: clamp(3.4rem, 19vw, 6.2rem);
-  line-height: .95; margin: 4px 0 0;
+  font-family: var(--font-title); font-weight: 900;
+  font-size: clamp(3.2rem, 17vw, 5.6rem);
+  line-height: 1.05; margin: 4px 0 0;
   color: var(--point);
-  text-shadow: 3px 4px 0 var(--blue);
+  text-shadow: 1px 2px 1px rgba(0,0,0,.08);
 }
 .title-main {
-  font-family: var(--font-title);
-  font-size: clamp(2.2rem, 11vw, 3.6rem);
+  font-family: var(--font-title); font-weight: 900;
+  font-size: clamp(2rem, 10vw, 3.2rem);
   margin: 0; color: var(--ink);
 }
 .title-badge {
@@ -155,8 +155,8 @@ body { position: relative; width: 100%; height: 100dvh; }
   pointer-events: none;
 }
 .hud-counter {
-  font-family: var(--font-title);
-  font-size: 2rem; color: var(--point-deep);
+  font-family: var(--font-title); font-weight: 900;
+  font-size: 1.7rem; color: var(--point-deep);
   background: rgba(255,255,255,.85);
   padding: 4px 22px; border-radius: 999px;
   box-shadow: 0 4px 12px rgba(232,76,134,.18);
@@ -165,7 +165,7 @@ body { position: relative; width: 100%; height: 100dvh; }
 #floor-count { color: var(--point); }
 
 .combo-tag {
-  font-family: var(--font-title);
+  font-family: var(--font-title); font-weight: 900;
   font-size: 1.6rem; color: var(--gold);
   text-shadow: 1px 2px 0 var(--point-deep);
   opacity: 0; transform: scale(.5);
@@ -226,7 +226,7 @@ body { position: relative; width: 100%; height: 100dvh; }
 }
 .go-emoji { font-size: 3rem; line-height: 1; }
 .go-floors-line {
-  font-family: var(--font-title);
+  font-family: var(--font-title); font-weight: 900;
   font-size: 1.8rem; color: var(--point-deep);
   margin: 10px 0 4px;
 }
@@ -240,11 +240,18 @@ body { position: relative; width: 100%; height: 100dvh; }
 /* =====================================================================
    3) 엔딩 / 케이크
    ===================================================================== */
-#ending-screen { justify-content: center; gap: 18px; }
+#ending-screen {
+  justify-content: flex-start;   /* 위에서부터 쌓아 하단 잘림 방지 */
+  gap: 12px;
+  overflow-y: auto;              /* 콘텐츠 길면 스크롤 */
+  -webkit-overflow-scrolling: touch;
+  padding-top: calc(14px + var(--safe-top));
+  padding-bottom: calc(28px + var(--safe-bottom));  /* 모바일 하단 버튼 안 잘리게 */
+}
 .cake-stage {
-  position: relative;
+  position: relative; flex: 0 0 auto;
   display: flex; align-items: flex-end; justify-content: center;
-  min-height: 46vh;
+  min-height: 30vh;
 }
 .cake-glow {
   position: absolute; width: 280px; height: 280px;
@@ -373,14 +380,13 @@ body { position: relative; width: 100%; height: 100dvh; }
 }
 
 /* 피날레 */
-.finale { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 560px; }
-.finale-eyebrow { color: var(--point); font-size: 1.4rem; margin: 0; }
+.finale { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 560px; width: 100%; }
 .finale-title {
-  font-family: var(--font-title);
-  font-size: clamp(2.4rem, 12vw, 3.6rem);
+  font-family: var(--font-title); font-weight: 900;
+  font-size: clamp(2rem, 10vw, 3rem);
   color: var(--point-deep); margin: 0;
-  text-shadow: 2px 3px 0 #fff;
 }
+.finale-title .emoji { font-weight: 400; }
 /* ---------- 케이크 기프티콘 카드 ---------- */
 .gifticon {
   width: 100%; max-width: 320px;
@@ -393,25 +399,33 @@ body { position: relative; width: 100%; height: 100dvh; }
   opacity: 0; transform: translateY(16px) scale(.96);
   pointer-events: none;
 }
-.gifticon.show { animation: gifticon-pop .5s cubic-bezier(.2,.9,.3,1.3) forwards; }
+.gifticon.show { animation: gifticon-pop .5s cubic-bezier(.2,.9,.3,1.3) forwards; pointer-events: auto; }
+.gifticon[hidden] { display: none; }
 .gifticon-title {
   font-family: var(--font-ui);
   font-size: 1.05rem; color: var(--point-deep);
   margin: 0 0 12px;
 }
+/* 이미지 한 장 (비율 유지) */
+.gifticon-photo {
+  display: block; width: 100%; max-height: 46vh;
+  object-fit: contain; border-radius: 14px;
+  background: #f6f7f9;
+}
+.gifticon-photo[hidden] { display: none; }
+
+/* 폴백 (이미지 없거나 로드 실패) */
+.gifticon-fallback[hidden] { display: none; }
 .gifticon-img {
   width: 100%; aspect-ratio: 4 / 3;
   border-radius: 14px;
   background: repeating-linear-gradient(45deg, #f3f4f6 0 12px, #eceef1 12px 24px);
-  background-size: cover; background-position: center;
   display: flex; align-items: center; justify-content: center;
   color: #9aa3ad; font-size: .9rem; font-family: var(--font-ui);
   margin-bottom: 14px;
 }
-.gifticon-img.has-img span { display: none; }
 .gifticon-brand { font-family: var(--font-ui); font-size: .9rem; color: #7a828c; margin: 0; }
 .gifticon-product { font-family: var(--font-ui); font-size: 1.25rem; color: var(--ink); margin: 2px 0 14px; }
-.gifticon-barcode { margin: 0 auto 10px; }
 .barcode-lines {
   height: 46px; width: 80%; margin: 0 auto 6px;
   background: repeating-linear-gradient(90deg,
@@ -419,7 +433,22 @@ body { position: relative; width: 100%; height: 100dvh; }
     #1c1c1c 9px 12px, #fff 12px 13px);
 }
 .barcode-num { font-family: monospace; letter-spacing: 2px; font-size: 1rem; color: #1c1c1c; margin: 0; }
-.gifticon-expire { font-size: .82rem; color: #9aa3ad; margin: 8px 0 0; }
+
+/* 번호 복사 버튼 */
+.gifticon-copy {
+  margin: 12px auto 0; display: inline-block;
+  font-family: var(--font-ui); font-size: .95rem;
+  color: var(--point-deep); background: #fff;
+  border: 2px solid var(--point); border-radius: 999px;
+  padding: 8px 20px; cursor: pointer;
+  transition: transform .1s ease;
+}
+.gifticon-copy:active { transform: scale(.95); }
+.gifticon-copy[hidden] { display: none; }
+.gifticon-copy:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.gifticon-expire { font-size: .82rem; color: #9aa3ad; margin: 10px 0 0; }
+.gifticon-expire[hidden], .gifticon-note[hidden] { display: none; }
 .gifticon-note {
   font-family: var(--font-hand);
   font-size: 1.25rem; color: var(--point);

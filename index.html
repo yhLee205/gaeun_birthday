@@ -9,7 +9,7 @@
   <!-- Google Fonts (한글): 제목 Black Han Sans / UI Jua / 본문 Gowun Dodum / 손편지 Nanum Pen Script -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&family=Jua&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -28,7 +28,7 @@
        ========================================================= -->
   <section id="title-screen" class="screen is-active" aria-label="시작 화면">
     <div class="title-inner">
-      <h1 class="title-name"><span id="title-name-text">가은</span></h1>
+      <h1 class="title-name"><span id="title-name-text">가은</span>아</h1>
       <h2 class="title-main">생일 축하해 🎉</h2>
       <div class="title-badge" id="title-date">2026.06.22</div>
       <p class="title-from" id="title-from">from. 규혁</p>
@@ -118,21 +118,28 @@
 
     <!-- 피날레: 기프티콘 보상 -->
     <div id="finale" class="finale" hidden>
-      <p class="finale-eyebrow" aria-hidden="true">🎉🎂🎉</p>
-      <h2 class="finale-title">생일 축하해</h2>
+      <h2 class="finale-title">생일 축하해 <span class="emoji" aria-hidden="true">🎉🎂</span></h2>
 
       <!-- 케이크 기프티콘 카드 (내용은 config.gifticon 에서 채워짐) -->
       <div id="gifticon" class="gifticon">
         <p class="gifticon-title" id="gifticon-title">케이크 기프티콘</p>
-        <div class="gifticon-img" id="gifticon-img"><span>이미지 들어갈 자리</span></div>
-        <p class="gifticon-brand" id="gifticon-brand"></p>
-        <p class="gifticon-product" id="gifticon-product"></p>
-        <div class="gifticon-barcode">
+
+        <!-- 이미지 한 장 (브랜드/상품/바코드가 모두 들어있는 캡처) -->
+        <img id="gifticon-photo" class="gifticon-photo" alt="케이크 기프티콘" hidden />
+
+        <!-- 폴백: 이미지가 없거나 로드 실패할 때만 표시 -->
+        <div id="gifticon-fallback" class="gifticon-fallback" hidden>
+          <div class="gifticon-img"><span>이미지 들어갈 자리</span></div>
+          <p class="gifticon-brand" id="gifticon-brand"></p>
+          <p class="gifticon-product" id="gifticon-product"></p>
           <div class="barcode-lines" aria-hidden="true"></div>
-          <p class="barcode-num" id="gifticon-barcode"></p>
+          <p class="barcode-num" id="gifticon-barcode-num"></p>
         </div>
-        <p class="gifticon-expire" id="gifticon-expire"></p>
-        <p class="gifticon-note" id="gifticon-note"></p>
+
+        <!-- 바코드 번호 복사 버튼 -->
+        <button id="copy-barcode" class="gifticon-copy" type="button" hidden>번호 복사</button>
+        <p class="gifticon-expire" id="gifticon-expire" hidden></p>
+        <p class="gifticon-note" id="gifticon-note" hidden></p>
       </div>
 
       <button id="replay-btn" class="btn btn-primary" type="button">한 번 더</button>

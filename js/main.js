@@ -797,24 +797,71 @@
     }
   }
 
-  // config.gifticon 더미 데이터로 카드 채우기
+  // config.gifticon 데이터로 카드 채우기 (이미지 한 장 우선)
   function fillGifticon() {
     var g = C.gifticon || {};
+    var card = $("gifticon");
+    if (g.show === false) { card.hidden = true; return; }
+    card.hidden = false;
+
     $("gifticon-title").textContent = g.title || "케이크 기프티콘";
-    $("gifticon-brand").textContent = g.brand || "";
-    $("gifticon-product").textContent = g.product || "";
-    $("gifticon-barcode").textContent = g.barcode || "";
-    $("gifticon-expire").textContent = g.expire ? ("유효기간 " + g.expire) : "";
-    $("gifticon-note").textContent = g.note || "";
-    // 이미지: imageUrl 있으면 표시, 없으면 플레이스홀더 유지
-    var img = $("gifticon-img");
-    if (g.imageUrl) {
-      img.style.backgroundImage = "url('" + g.imageUrl + "')";
-      img.classList.add("has-img");
-    } else {
-      img.style.backgroundImage = "";
-      img.classList.remove("has-img");
+
+    var photo = $("gifticon-photo");
+    var fallback = $("gifticon-fallback");
+
+    function showFallback() {
+      photo.hidden = true;
+      fallback.hidden = false;
+      $("gifticon-brand").textContent = g.brand || "";
+      $("gifticon-product").textContent = g.product || "";
+      $("gifticon-barcode-num").textContent = g.barcode || "";
     }
+
+    if (g.imageUrl) {
+      // 이미지 한 장만 깔끔하게. 로드 실패 시에만 텍스트 폴백
+      fallback.hidden = true;
+      photo.onerror = showFallback;
+      photo.onload = function () { photo.hidden = false; };
+      photo.src = g.imageUrl;
+      photo.hidden = false;
+    } else {
+      showFallback();
+    }
+
+    // 바코드 번호 복사 버튼
+    var copyBtn = $("copy-barcode");
+    if (g.barcode) {
+      copyBtn.hidden = false;
+      copyBtn.textContent = "번호 복사";
+      copyBtn.onclick = function () { copyBarcode(g.barcode, copyBtn); };
+    } else {
+      copyBtn.hidden = true;
+    }
+
+    // 유효기간 / 안내문구 — 비어있으면 숨김
+    var expEl = $("gifticon-expire");
+    if (g.expire) { expEl.hidden = false; expEl.textContent = "유효기간 " + g.expire; }
+    else { expEl.hidden = true; }
+    var noteEl = $("gifticon-note");
+    if (g.note) { noteEl.hidden = false; noteEl.textContent = g.note; }
+    else { noteEl.hidden = true; }
+  }
+
+  function copyBarcode(barcode, btn) {
+    var num = ("" + barcode).replace(/\s+/g, "");
+    function ok() { btn.textContent = "복사됨!"; setTimeout(function () { btn.textContent = "번호 복사"; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(num).then(ok, function () { legacyCopy(num); ok(); });
+    } else {
+      legacyCopy(num); ok();
+    }
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
   }
 
   /* ---------- 한 번 더 ---------- */
