@@ -54,7 +54,6 @@
   /* ---------- 타이틀 텍스트 채우기 ---------- */
   (function fillTitle() {
     $("title-name-text").textContent = C.name || "친구";
-    if (C.tagline) $("title-tagline").textContent = C.tagline;
     if (C.startLabel) $("start-btn").textContent = C.startLabel;
     $("title-date").textContent = C.date || "";
     $("title-from").textContent = C.from ? ("from. " + C.from) : "";
@@ -598,9 +597,8 @@
       }, REDUCED ? 0 : 250 + i * 120);
     });
 
-    // 케이크 다 모이면 바로 후 불기 단계로
+    // 케이크 다 모이면 바로 (힌트 없이) 촛불 끄기 단계로
     setTimeout(function () {
-      $("blow-panel").hidden = false;
       startBlowPhase();
     }, REDUCED ? 200 : 250 + tiers.length * 120 + 500);
   }
@@ -642,7 +640,6 @@
   function setupFan() {
     var fan = $("fan");
     var wind = $("fan-wind");
-    var sub = $("blow-sub");
     var armed = false, blowTimer = null;
     var dragging = false, offX = 0, offY = 0;
 
@@ -775,12 +772,7 @@
     // 낮은 "후—" 음
     playNote(0, { freq: 180, type: "sine", vol: 0.14, dur: 0.5 });
 
-    var panel = $("blow-panel");
-    panel.classList.add("hide");
-    setTimeout(function () {
-      panel.hidden = true;
-      $("fan").hidden = true;
-    }, 400);
+    setTimeout(function () { $("fan").hidden = true; }, 400);
 
     setTimeout(function () {
       launchConfetti();
@@ -789,13 +781,14 @@
   }
 
   /* =====================================================================
-     피날레: 손편지 타이핑
+     피날레: "생일 축하해" 타이틀 + 케이크 기프티콘 지급
      ===================================================================== */
   function revealFinale() {
     var finale = $("finale");
     finale.hidden = false;
-    $("letter-sign").textContent = C.letterSign || "";
-    typeLetter(C.letter || "생일 축하해 🤍");
+    fillGifticon();
+    // 짧은 딜레이 뒤 기프티콘 카드 팝인
+    setTimeout(function () { $("gifticon").classList.add("show"); }, REDUCED ? 0 : 500);
     // 축하 멜로디
     if (!REDUCED) {
       [0, 2, 4, 7].forEach(function (n, i) {
@@ -804,27 +797,24 @@
     }
   }
 
-  function typeLetter(text) {
-    var el = $("letter");
-    el.textContent = "";
-    if (REDUCED) { el.textContent = text; return; }
-    var caret = document.createElement("span");
-    caret.className = "letter-caret";
-    caret.textContent = "|";
-    var i = 0;
-    function step() {
-      if (i < text.length) {
-        el.textContent = text.slice(0, i + 1);
-        el.appendChild(caret);
-        i++;
-        // 줄바꿈에선 잠깐 쉬어감
-        var delay = text[i - 1] === "\n" ? 220 : 55;
-        setTimeout(step, delay);
-      } else {
-        if (caret.parentNode) caret.parentNode.removeChild(caret);
-      }
+  // config.gifticon 더미 데이터로 카드 채우기
+  function fillGifticon() {
+    var g = C.gifticon || {};
+    $("gifticon-title").textContent = g.title || "케이크 기프티콘";
+    $("gifticon-brand").textContent = g.brand || "";
+    $("gifticon-product").textContent = g.product || "";
+    $("gifticon-barcode").textContent = g.barcode || "";
+    $("gifticon-expire").textContent = g.expire ? ("유효기간 " + g.expire) : "";
+    $("gifticon-note").textContent = g.note || "";
+    // 이미지: imageUrl 있으면 표시, 없으면 플레이스홀더 유지
+    var img = $("gifticon-img");
+    if (g.imageUrl) {
+      img.style.backgroundImage = "url('" + g.imageUrl + "')";
+      img.classList.add("has-img");
+    } else {
+      img.style.backgroundImage = "";
+      img.classList.remove("has-img");
     }
-    step();
   }
 
   /* ---------- 한 번 더 ---------- */
