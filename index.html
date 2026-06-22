@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#FFF1F4" />
+  <title>생일 축하해 🎂</title>
+
+  <!-- Google Fonts (한글): 제목 Black Han Sans / UI Jua / 본문 Gowun Dodum / 손편지 Nanum Pen Script -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- =========================================================
+       배경 사진 레이어 (캔버스 뒤. 사진 없으면 파스텔 배경)
+       ========================================================= -->
+  <div id="photo-layer" aria-hidden="true">
+    <div class="photo photo-a"></div>
+    <div class="photo photo-b"></div>
+    <div class="photo-veil"></div>
+  </div>
+
+  <!-- =========================================================
+       1) 타이틀 화면
+       ========================================================= -->
+  <section id="title-screen" class="screen is-active" aria-label="시작 화면">
+    <div class="title-inner">
+      <div class="hearts" aria-hidden="true">♡ ♥ ♡</div>
+      <p class="title-eyebrow">HAPPY BIRTHDAY</p>
+      <h1 class="title-name"><span id="title-name-text">가은</span>야</h1>
+      <h2 class="title-main">생일 축하해</h2>
+      <div class="title-badge" id="title-date">2026.06.22</div>
+      <p class="title-from" id="title-from">from. 오빠가</p>
+      <button id="start-btn" class="btn btn-primary" type="button">
+        🎂 시작하기
+      </button>
+      <p class="title-hint">탭 또는 스페이스바로 칸을 쌓아요</p>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       2) 게임 화면
+       ========================================================= -->
+  <section id="game-screen" class="screen" aria-label="케이크 쌓기 게임">
+    <div class="hud">
+      <div class="hud-counter">
+        <span id="floor-count">0</span><span class="hud-sep"> / </span><span id="floor-target">22</span> 층
+      </div>
+      <div id="combo-tag" class="combo-tag" aria-hidden="true">PERFECT!</div>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div id="message-bubble" class="message-bubble" role="status" aria-live="polite"></div>
+
+    <button id="drop-btn" class="drop-hit" type="button" aria-label="칸 떨어뜨리기">
+      <span class="drop-hint">탭해서 쌓기</span>
+    </button>
+
+    <!-- 게임오버 오버레이 (다정한 톤) -->
+    <div id="game-over" class="game-over" hidden role="dialog" aria-modal="true" aria-labelledby="go-title">
+      <div class="go-card">
+        <div class="go-emoji" aria-hidden="true">🍰</div>
+        <p id="go-title" class="go-floors-line"><span id="go-floors">0</span>층까지 쌓았어!</p>
+        <p id="go-cheer" class="go-cheer"></p>
+        <button id="restart-btn" class="btn btn-primary" type="button">다시하기 🔄</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       3) 엔딩 화면
+       ========================================================= -->
+  <section id="ending-screen" class="screen" aria-label="생일 케이크 엔딩">
+    <!-- 케이크 무대 -->
+    <div id="cake-stage" class="cake-stage">
+      <div class="cake-glow" aria-hidden="true"></div>
+      <div id="cake" class="cake" aria-label="생일 케이크">
+        <div class="candle">
+          <div class="candle-stick"></div>
+          <div id="flame" class="flame">
+            <div class="flame-inner"></div>
+          </div>
+          <div id="smoke" class="smoke" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <!-- 케이크 층은 JS가 채워 넣습니다 -->
+        <div id="cake-tiers" class="cake-tiers"></div>
+      </div>
+    </div>
+
+    <!-- 후 불기 안내 + 폴백 -->
+    <div id="blow-panel" class="blow-panel" hidden>
+      <p class="blow-title">후— 불어봐 🕯️</p>
+      <p id="blow-sub" class="blow-sub">마이크에 입김을 불면 촛불이 꺼져요</p>
+      <button id="mic-btn" class="btn btn-ghost" type="button">🎤 마이크 켜기</button>
+      <button id="hold-btn" class="btn btn-hold" type="button">
+        <span class="hold-fill" id="hold-fill"></span>
+        <span class="hold-label">꾹 눌러서 끄기</span>
+      </button>
+    </div>
+
+    <!-- 피날레: 손편지 -->
+    <div id="finale" class="finale" hidden>
+      <p class="finale-eyebrow" aria-hidden="true">♡</p>
+      <h2 class="finale-title">생일 축하해</h2>
+      <div id="letter" class="letter" aria-live="polite"></div>
+      <p id="letter-sign" class="letter-sign"></p>
+      <button id="replay-btn" class="btn btn-primary" type="button">한 번 더 🔄</button>
+    </div>
+  </section>
+
+  <!-- 꽃가루 폭죽 캔버스 -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
