@@ -28,16 +28,15 @@
        ========================================================= -->
   <section id="title-screen" class="screen is-active" aria-label="시작 화면">
     <div class="title-inner">
-      <div class="hearts" aria-hidden="true">♡ ♥ ♡</div>
-      <p class="title-eyebrow">HAPPY BIRTHDAY</p>
-      <h1 class="title-name"><span id="title-name-text">가은</span>야</h1>
-      <h2 class="title-main">생일 축하해</h2>
+      <p class="title-eyebrow" id="title-tagline">야 너 몇 살 되냐</p>
+      <h1 class="title-name"><span id="title-name-text">가은</span></h1>
+      <h2 class="title-main">생일 축하한다 🎉</h2>
       <div class="title-badge" id="title-date">2026.06.22</div>
-      <p class="title-from" id="title-from">from. 오빠가</p>
+      <p class="title-from" id="title-from">from. 규혁</p>
       <button id="start-btn" class="btn btn-primary" type="button">
-        🎂 시작하기
+        🎂 케이크 받으러 간다
       </button>
-      <p class="title-hint">탭 또는 스페이스바로 칸을 쌓아요</p>
+      <p class="title-hint">탭 / 스페이스바로 칸을 쌓아</p>
     </div>
   </section>
 
@@ -75,11 +74,36 @@
        3) 엔딩 화면
        ========================================================= -->
   <section id="ending-screen" class="screen" aria-label="생일 케이크 엔딩">
+    <!-- 드래그하는 선풍기 (SVG, 외부 이미지 없음) -->
+    <div id="fan" class="fan" hidden role="button" tabindex="0"
+         aria-label="선풍기 - 촛불 쪽으로 끌어다 놓아 불을 꺼요">
+      <div id="fan-wind" class="fan-wind" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <svg class="fan-svg" viewBox="0 0 80 92" aria-hidden="true">
+        <!-- 받침대 -->
+        <rect x="34" y="58" width="12" height="22" rx="3" fill="#3A4A5A"/>
+        <ellipse cx="40" cy="84" rx="20" ry="6" fill="#2C3A48"/>
+        <!-- 보호망 테두리 -->
+        <circle cx="40" cy="36" r="30" fill="#E9F2FA" stroke="#9FB6C9" stroke-width="2"/>
+        <!-- 날개 (이 그룹이 회전) -->
+        <g class="fan-blades">
+          <g transform="translate(40 36)">
+            <ellipse cx="0" cy="-15" rx="7" ry="14" fill="#38B6FF"/>
+            <ellipse cx="0" cy="-15" rx="7" ry="14" fill="#25D6A4" transform="rotate(120)"/>
+            <ellipse cx="0" cy="-15" rx="7" ry="14" fill="#FFD23F" transform="rotate(240)"/>
+          </g>
+        </g>
+        <circle cx="40" cy="36" r="5" fill="#FF8A3D" stroke="#fff" stroke-width="2"/>
+      </svg>
+    </div>
+
     <!-- 케이크 무대 -->
     <div id="cake-stage" class="cake-stage">
       <div class="cake-glow" aria-hidden="true"></div>
       <div id="cake" class="cake" aria-label="생일 케이크">
-        <div class="candle">
+        <div id="candle" class="candle" role="button" tabindex="0"
+             aria-label="촛불 - 길게 누르면 꺼져요">
           <div class="candle-stick"></div>
           <div id="flame" class="flame">
             <div class="flame-inner"></div>
@@ -93,21 +117,16 @@
       </div>
     </div>
 
-    <!-- 후 불기 안내 + 폴백 -->
+    <!-- 안내 문구 -->
     <div id="blow-panel" class="blow-panel" hidden>
-      <p class="blow-title">후— 불어봐 🕯️</p>
-      <p id="blow-sub" class="blow-sub">마이크에 입김을 불면 촛불이 꺼져요</p>
-      <button id="mic-btn" class="btn btn-ghost" type="button">🎤 마이크 켜기</button>
-      <button id="hold-btn" class="btn btn-hold" type="button">
-        <span class="hold-fill" id="hold-fill"></span>
-        <span class="hold-label">꾹 눌러서 끄기</span>
-      </button>
+      <p class="blow-title">불 끄자 🌬️</p>
+      <p id="blow-sub" class="blow-sub">선풍기를 촛불 쪽으로 끌어다 놔봐 <small>(안 되면 촛불을 길게 눌러도 꺼져)</small></p>
     </div>
 
     <!-- 피날레: 손편지 -->
     <div id="finale" class="finale" hidden>
-      <p class="finale-eyebrow" aria-hidden="true">♡</p>
-      <h2 class="finale-title">생일 축하해</h2>
+      <p class="finale-eyebrow" aria-hidden="true">🎉🎂🎉</p>
+      <h2 class="finale-title">생일 축하한다!</h2>
       <div id="letter" class="letter" aria-live="polite"></div>
       <p id="letter-sign" class="letter-sign"></p>
       <button id="replay-btn" class="btn btn-primary" type="button">한 번 더 🔄</button>

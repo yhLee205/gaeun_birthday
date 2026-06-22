@@ -26,12 +26,12 @@
 
   // 사진이 없을 때 쓰는 파스텔 그라데이션 배경들
   var PLACEHOLDER_BGS = [
-    "linear-gradient(135deg,#FFE0EC,#FFC2D6)",
-    "linear-gradient(135deg,#E7F5FF,#CDE7FF)",
-    "linear-gradient(135deg,#FFF3D6,#FFE0A8)",
-    "linear-gradient(135deg,#E8FFF2,#C8F2DD)",
-    "linear-gradient(135deg,#F0E8FF,#D9CCFF)",
-    "linear-gradient(135deg,#FFE8E0,#FFD0C2)",
+    "linear-gradient(135deg,#FFE9C2,#FFC36B)",  // 옐로우-오렌지
+    "linear-gradient(135deg,#CDEBFF,#7CCBFF)",  // 블루
+    "linear-gradient(135deg,#CFF6E7,#7BE3C0)",  // 민트
+    "linear-gradient(135deg,#FFD9E4,#FF9DBC)",  // 핑크
+    "linear-gradient(135deg,#E6DBFF,#BFA3FF)",  // 퍼플
+    "linear-gradient(135deg,#FFE2C2,#FFB07C)",  // 살구
   ];
 
   var REDUCED = window.matchMedia &&
@@ -53,22 +53,13 @@
 
   /* ---------- 타이틀 텍스트 채우기 ---------- */
   (function fillTitle() {
-    var name = C.name || "친구";
-    $("title-name-text").textContent = name;
-    // 받침 여부로 "야 / 아" 자동 선택
-    var particle = hasFinalConsonant(name) ? "아" : "야";
-    $("title-name-text").parentNode.lastChild.textContent = particle;
+    $("title-name-text").textContent = C.name || "친구";
+    if (C.tagline) $("title-tagline").textContent = C.tagline;
+    if (C.startLabel) $("start-btn").textContent = C.startLabel;
     $("title-date").textContent = C.date || "";
     $("title-from").textContent = C.from ? ("from. " + C.from) : "";
     $("floor-target").textContent = TARGET;
   })();
-
-  function hasFinalConsonant(str) {
-    if (!str) return false;
-    var ch = str.charCodeAt(str.length - 1);
-    if (ch < 0xAC00 || ch > 0xD7A3) return true; // 한글 아니면 자음형 취급("야"는 어색하니 "아")
-    return (ch - 0xAC00) % 28 !== 0;
-  }
 
   /* =====================================================================
      사운드 (Web Audio API) — 음정이 한 음씩 올라감
@@ -186,7 +177,7 @@
     floorCountEl.textContent = "0";
 
     var baseW = Math.min(W * 0.46, 230);
-    baseBlock = { x: (W - baseW) / 2, width: baseW, color: "#E7B7C8" };
+    baseBlock = { x: (W - baseW) / 2, width: baseW, color: "#F2E2C4" };
     buildBlockGfx(baseBlock, 0);
     setBackground(0);
     spawnCurrent();
@@ -635,112 +626,148 @@
   }
 
   /* =====================================================================
-     촛불 끄기 — 마이크(AnalyserNode) + 폴백(꾹 누르기)
+     촛불 끄기 — 선풍기를 드래그해서 촛불 쪽으로 가져가기
+     (폴백: 촛불을 길게 눌러도 꺼짐)
      ===================================================================== */
-  var micStream = null, analyser = null, micRAF = null, blownOut = false;
+  var blownOut = false;
+  var BLOW_RANGE = 95;     // 촛불 중심에서 이 거리 안에 들면 바람이 닿음(px)
+  var BLOW_HOLD = 600;     // 이만큼 머무르면 촛불이 꺼짐(ms)
 
   function startBlowPhase() {
     blownOut = false;
-    var micBtn = $("mic-btn");
-    var sub = $("blow-sub");
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      micBtn.hidden = true;
-      sub.textContent = "이 브라우저는 마이크를 못 써요. 아래 버튼을 꾹 눌러줘!";
-    }
-
-    micBtn.onclick = function () {
-      micBtn.disabled = true;
-      micBtn.textContent = "마이크 켜는 중…";
-      enableMic().then(function () {
-        micBtn.textContent = "🎤 준비됐어! 불어봐";
-        sub.textContent = "마이크에 \"후—\" 하고 불면 꺼져요";
-      }).catch(function () {
-        micBtn.hidden = true;
-        sub.textContent = "마이크를 못 켰어요. 아래 버튼을 꾹 눌러줘!";
-      });
-    };
-
-    setupHoldButton();
+    setupFan();
+    setupCandleHold();
   }
 
-  function enableMic() {
-    ensureAudio();
-    return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-      micStream = stream;
-      var src = audioCtx.createMediaStreamSource(stream);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      src.connect(analyser);
-      listenForBlow();
+  function setupFan() {
+    var fan = $("fan");
+    var wind = $("fan-wind");
+    var sub = $("blow-sub");
+    var armed = false, blowTimer = null;
+    var dragging = false, offX = 0, offY = 0;
+
+    fan.hidden = false;
+    // 시작 위치: 엔딩 화면 좌측 상단
+    placeFan(18, 18);
+
+    function placeFan(left, top) {
+      fan.style.left = left + "px";
+      fan.style.top = top + "px";
+    }
+    function fanCenter() {
+      var r = fan.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+    function candleCenter() {
+      var r = $("flame").getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.bottom };
+    }
+
+    function updateProximity() {
+      if (blownOut) return;
+      var fc = fanCenter(), cc = candleCenter();
+      var dx = cc.x - fc.x, dy = cc.y - fc.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      // 바람(연기 줄)을 촛불 방향으로 회전
+      var ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      wind.style.transform = "translate(-50%,-50%) rotate(" + ang + "deg)";
+
+      var inRange = dist < BLOW_RANGE;
+      if (inRange && !armed) {
+        armed = true;
+        fan.classList.add("fan-fast");
+        wind.classList.add("on");
+        blowTimer = setTimeout(function () { if (!blownOut) blowOut(); }, BLOW_HOLD);
+      } else if (!inRange && armed) {
+        armed = false;
+        fan.classList.remove("fan-fast");
+        wind.classList.remove("on");
+        if (blowTimer) { clearTimeout(blowTimer); blowTimer = null; }
+      }
+    }
+
+    function onDown(e) {
+      if (blownOut) return;
+      dragging = true;
+      try { fan.setPointerCapture(e.pointerId); } catch (err) {}
+      var r = fan.getBoundingClientRect();
+      offX = e.clientX - r.left;
+      offY = e.clientY - r.top;
+      e.preventDefault();
+    }
+    function onMove(e) {
+      if (!dragging || blownOut) return;
+      var host = endingScreen.getBoundingClientRect();
+      var left = e.clientX - host.left - offX;
+      var top = e.clientY - host.top - offY;
+      // 화면 안으로 가두기
+      left = Math.max(0, Math.min(left, host.width - fan.offsetWidth));
+      top = Math.max(0, Math.min(top, host.height - fan.offsetHeight));
+      placeFan(left, top);
+      updateProximity();
+    }
+    function onUp(e) {
+      dragging = false;
+      try { fan.releasePointerCapture(e.pointerId); } catch (err) {}
+      // 손을 떼도 촛불 범위 안에 놓였으면 계속 바람이 닿음
+      updateProximity();
+    }
+
+    fan.addEventListener("pointerdown", onDown);
+    fan.addEventListener("pointermove", onMove);
+    fan.addEventListener("pointerup", onUp);
+    fan.addEventListener("pointercancel", onUp);
+    // 키보드 접근성: 방향키로 선풍기 이동
+    fan.addEventListener("keydown", function (e) {
+      if (blownOut) return;
+      var step = 24, moved = true;
+      var left = parseFloat(fan.style.left) || 0;
+      var top = parseFloat(fan.style.top) || 0;
+      if (e.key === "ArrowLeft") left -= step;
+      else if (e.key === "ArrowRight") left += step;
+      else if (e.key === "ArrowUp") top -= step;
+      else if (e.key === "ArrowDown") top += step;
+      else moved = false;
+      if (moved) { e.preventDefault(); placeFan(left, top); updateProximity(); }
     });
   }
 
-  function listenForBlow() {
-    var buf = new Uint8Array(analyser.fftSize);
-    var loudFrames = 0;
-    function tick() {
-      if (blownOut) return;
-      analyser.getByteTimeDomainData(buf);
-      var sum = 0;
-      for (var i = 0; i < buf.length; i++) {
-        var v = (buf[i] - 128) / 128;
-        sum += v * v;
-      }
-      var rms = Math.sqrt(sum / buf.length);
-      // 입김은 지속적으로 큰 볼륨 → 여러 프레임 연속이면 인정
-      if (rms > 0.18) { loudFrames++; } else { loudFrames = Math.max(0, loudFrames - 1); }
-      if (loudFrames >= 6) { blowOut(); return; }
-      micRAF = requestAnimationFrame(tick);
-    }
-    tick();
-  }
-
-  /* ---------- 폴백: 꾹 누르기 ---------- */
-  function setupHoldButton() {
-    var holdBtn = $("hold-btn");
-    var fill = $("hold-fill");
-    var holdStart = 0, holdRAF = null;
-    var HOLD_MS = 1100;
+  /* ---------- 폴백: 촛불 길게 누르기 ---------- */
+  function setupCandleHold() {
+    var candle = $("candle");
+    var HOLD_MS = 1000;
+    var holdRAF = null, holdStart = 0;
 
     function begin(e) {
-      e.preventDefault();
       if (blownOut) return;
+      e.preventDefault();
       holdStart = performance.now();
       step();
     }
     function step() {
-      var pct = Math.min(100, (performance.now() - holdStart) / HOLD_MS * 100);
-      fill.style.width = pct + "%";
-      if (pct >= 100) { blowOut(); return; }
+      if (blownOut) return;
+      if (performance.now() - holdStart >= HOLD_MS) { blowOut(); return; }
       holdRAF = requestAnimationFrame(step);
     }
-    function end() {
-      if (holdRAF) cancelAnimationFrame(holdRAF);
-      if (!blownOut) fill.style.width = "0%";
-    }
-    holdBtn.addEventListener("pointerdown", begin);
-    holdBtn.addEventListener("pointerup", end);
-    holdBtn.addEventListener("pointerleave", end);
-    holdBtn.addEventListener("pointercancel", end);
-    // 키보드 접근성: Enter/Space 로도 끌 수 있게
-    holdBtn.addEventListener("keydown", function (e) {
+    function end() { if (holdRAF) cancelAnimationFrame(holdRAF); }
+
+    candle.addEventListener("pointerdown", begin);
+    candle.addEventListener("pointerup", end);
+    candle.addEventListener("pointerleave", end);
+    candle.addEventListener("pointercancel", end);
+    candle.addEventListener("keydown", function (e) {
       if ((e.key === "Enter" || e.code === "Space") && !blownOut) {
         e.preventDefault(); blowOut();
       }
     });
   }
 
-  function stopMic() {
-    if (micRAF) cancelAnimationFrame(micRAF);
-    if (micStream) { micStream.getTracks().forEach(function (t) { t.stop(); }); micStream = null; }
-  }
-
   /* ---------- 촛불이 꺼지는 순간 ---------- */
   function blowOut() {
     if (blownOut) return;
     blownOut = true;
-    stopMic();
+    $("fan").classList.remove("fan-fast");
+    $("fan-wind").classList.remove("on");
 
     $("flame").classList.add("out");
     $("smoke").classList.add("rise");
@@ -750,7 +777,10 @@
 
     var panel = $("blow-panel");
     panel.classList.add("hide");
-    setTimeout(function () { panel.hidden = true; }, 400);
+    setTimeout(function () {
+      panel.hidden = true;
+      $("fan").hidden = true;
+    }, 400);
 
     setTimeout(function () {
       launchConfetti();
@@ -811,7 +841,7 @@
     cv.classList.add("on");
     var cw = cv.width = window.innerWidth;
     var ch = cv.height = window.innerHeight;
-    var colors = ["#FF6FA5", "#FFC857", "#B5EAD7", "#C7CEEA", "#FFB7B2", "#fff"];
+    var colors = ["#FF8A3D", "#FFD23F", "#25D6A4", "#38B6FF", "#FF5C8A", "#A06CFF", "#fff"];
     var parts = [];
     var count = REDUCED ? 50 : 160;
     for (var i = 0; i < count; i++) {

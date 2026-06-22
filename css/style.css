@@ -3,12 +3,16 @@
    ===================================================================== */
 
 :root {
-  --bg: #FFF1F4;
-  --point: #FF6FA5;
-  --point-deep: #E84C86;
-  --gold: #FFC857;
-  --ink: #4A2E3A;
-  --white-soft: #FFFDFE;
+  /* 알록달록 생일 파티 톤 — 핑크 단일톤 X, 옐로우/오렌지/민트/블루 메인 */
+  --bg: #FFF7E8;        /* 따뜻한 크림 배경 */
+  --point: #FF8A3D;     /* 오렌지 (메인 포인트) */
+  --point-deep: #F2541B;/* 딥 오렌지 */
+  --gold: #FFD23F;      /* 옐로우 */
+  --mint: #25D6A4;      /* 민트 */
+  --blue: #38B6FF;      /* 블루 */
+  --pop: #FF5C8A;       /* 핑크 (조금만 포인트로) */
+  --ink: #243042;       /* 진한 슬레이트 (텍스트) */
+  --white-soft: #FFFFFF;
 
   --font-title: "Black Han Sans", sans-serif;
   --font-ui: "Jua", sans-serif;
@@ -45,7 +49,7 @@ body { position: relative; width: 100%; height: 100dvh; }
 .photo.is-on { opacity: 1; }
 .photo-veil {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(255,241,244,0.55), rgba(255,241,244,0.78));
+  background: linear-gradient(180deg, rgba(255,247,232,0.55), rgba(255,247,232,0.80));
   backdrop-filter: blur(1px);
 }
 
@@ -74,8 +78,8 @@ body { position: relative; width: 100%; height: 100dvh; }
 .btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 
 .btn-primary {
-  background: linear-gradient(180deg, var(--point), var(--point-deep));
-  box-shadow: 0 8px 20px rgba(232,76,134,.35);
+  background: linear-gradient(135deg, var(--gold), var(--point) 55%, var(--pop));
+  box-shadow: 0 8px 18px rgba(242,84,27,.30);
 }
 .btn-primary:hover { filter: brightness(1.04); }
 .btn-ghost {
@@ -103,24 +107,25 @@ body { position: relative; width: 100%; height: 100dvh; }
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   animation: rise-in .7s ease both;
 }
-.hearts { color: var(--point); letter-spacing: 8px; font-size: 1.2rem; margin-bottom: 4px; }
 .title-eyebrow {
   font-family: var(--font-ui);
-  letter-spacing: .35em; color: var(--point-deep);
-  font-size: .8rem; margin: 0;
+  color: var(--ink);
+  background: var(--gold);
+  padding: 5px 14px; border-radius: 999px;
+  font-size: .95rem; margin: 0 0 6px;
+  transform: rotate(-2deg);
 }
 .title-name {
   font-family: var(--font-title);
-  font-size: clamp(3.2rem, 18vw, 6rem);
+  font-size: clamp(3.4rem, 19vw, 6.2rem);
   line-height: .95; margin: 4px 0 0;
-  color: var(--point-deep);
-  text-shadow: 3px 4px 0 #fff, 6px 8px 0 rgba(232,76,134,.18);
+  color: var(--point);
+  text-shadow: 3px 4px 0 var(--blue);
 }
 .title-main {
   font-family: var(--font-title);
   font-size: clamp(2.2rem, 11vw, 3.6rem);
   margin: 0; color: var(--ink);
-  text-shadow: 2px 3px 0 #fff;
 }
 .title-badge {
   font-family: var(--font-ui);
@@ -314,11 +319,58 @@ body { position: relative; width: 100%; height: 100dvh; }
 .smoke.rise span:nth-child(2) { animation: smoke 1.6s ease-out .25s forwards; }
 .smoke.rise span:nth-child(3) { animation: smoke 1.6s ease-out .5s forwards; }
 
-/* 후 불기 패널 */
-.blow-panel { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+/* 안내 패널 */
+.blow-panel { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .blow-title { font-family: var(--font-title); font-size: 1.8rem; color: var(--point-deep); margin: 0; }
-.blow-sub { font-size: .9rem; color: #8a6b76; margin: 0 0 4px; }
+.blow-sub { font-size: .95rem; color: #5a6675; margin: 0 0 4px; }
+.blow-sub small { display: block; font-size: .8rem; color: #93a0ae; margin-top: 2px; }
 .blow-panel.hide { animation: fade-out .4s ease forwards; }
+
+/* ---------- 드래그하는 선풍기 ---------- */
+#candle { cursor: pointer; outline: none; }
+#candle:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
+.fan {
+  position: absolute; z-index: 12;
+  width: 74px; height: 84px;
+  left: 18px; top: 18px;
+  cursor: grab;
+  touch-action: none;          /* 모바일 드래그 시 스크롤과 충돌 방지 */
+  user-select: none; -webkit-user-select: none;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.18));
+}
+.fan:active { cursor: grabbing; }
+.fan[hidden] { display: none; }
+.fan:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; border-radius: 12px; }
+.fan-svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.fan-blades { transform-box: fill-box; transform-origin: center; animation: fan-spin 2.4s linear infinite; }
+.fan.fan-fast .fan-blades { animation-duration: .25s; }
+
+/* 바람 (선풍기 → 촛불 방향으로 스치는 흰 곡선 줄) */
+.fan-wind {
+  position: absolute; left: 50%; top: 38%;
+  width: 120px; height: 60px;
+  transform: translate(-50%,-50%);
+  opacity: 0; transition: opacity .15s ease;
+  pointer-events: none;
+}
+.fan-wind.on { opacity: 1; }
+.fan-wind span {
+  position: absolute; left: 30px; top: 50%;
+  width: 46px; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95));
+}
+.fan-wind span:nth-child(1) { margin-top: -10px; }
+.fan-wind span:nth-child(2) { margin-top: 0; }
+.fan-wind span:nth-child(3) { margin-top: 10px; }
+.fan-wind.on span:nth-child(1) { animation: wind-streak .5s linear infinite; }
+.fan-wind.on span:nth-child(2) { animation: wind-streak .5s linear .15s infinite; }
+.fan-wind.on span:nth-child(3) { animation: wind-streak .5s linear .3s infinite; }
+@keyframes fan-spin { to { transform: rotate(360deg); } }
+@keyframes wind-streak {
+  0% { transform: translateX(0) scaleX(.4); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateX(60px) scaleX(1); opacity: 0; }
+}
 
 /* 피날레 */
 .finale { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 560px; }
